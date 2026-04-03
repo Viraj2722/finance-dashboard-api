@@ -17,7 +17,6 @@
     "@fastify/swagger": "^8.15.0",
     "@fastify/swagger-ui": "^1.10.2",
     "@prisma/client": "^5.22.0",
-    "@scalar/fastify-api-reference": "^1.49.8",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.6.1",

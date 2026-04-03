@@ -61,23 +61,16 @@ export async function createApp() {
   });
 
   await app.register(fastifySwaggerUi, {
-    routePrefix: "/docs/swagger",
+    routePrefix: "/docs",
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
     uiConfig: {
       docExpansion: "list",
-      deepLinking: false,
+      deepLinking: true,
     },
   });
 
   app.get("/openapi.json", async () => app.swagger());
-
-  const { default: apiReference } = await import("@scalar/fastify-api-reference");
-
-  await app.register(apiReference, {
-    routePrefix: "/docs",
-    configuration: {
-      url: "/openapi.json",
-    },
-  });
 
   // Health check route (no auth required)
   app.get("/health", async (request, reply) => {
