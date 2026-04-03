@@ -10,7 +10,9 @@ const envSchema = zod_1.z.object({
     DATABASE_URL: zod_1.z.string().url(),
     JWT_SECRET: zod_1.z.string().min(32, "JWT_SECRET must be at least 32 characters"),
     NODE_ENV: zod_1.z.enum(["development", "production", "test"]).default("development"),
+    HOST: zod_1.z.string().default("localhost"),
     PORT: zod_1.z.coerce.number().default(3000),
+    API_BASE_URL: zod_1.z.string().url().optional(),
 });
 let env;
 try {

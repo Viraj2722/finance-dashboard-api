@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import fastifyCors from "@fastify/cors";
 import fastifyHelmet from "@fastify/helmet";
+import fastifySwagger from "@fastify/swagger";
+import fastifySwaggerUi from "@fastify/swagger-ui";
 import env from "./config/env";
 import { authRoutes } from "./modules/auth/auth.routes";
 import { usersRoutes } from "./modules/users/users.routes";
@@ -12,6 +14,9 @@ import { errorResponse } from "./utils/response";
 const fastifyJwt = require("@fastify/jwt");
 
 export async function createApp() {
+  const protocol = env.NODE_ENV === "production" ? "https" : "http";
+  const serverUrl = env.API_BASE_URL ?? `${protocol}://${env.HOST}:${env.PORT}`;
+
   const app = Fastify({
     logger: {
       level: env.NODE_ENV === "production" ? "error" : "debug",
@@ -26,6 +31,52 @@ export async function createApp() {
 
   await app.register(fastifyJwt, {
     secret: env.JWT_SECRET,
+  });
+
+  await app.register(fastifySwagger, {
+    openapi: {
+      openapi: "3.0.3",
+      info: {
+        title: "Finance Dashboard API",
+        version: "1.0.0",
+      },
+      servers: [{ url: serverUrl }],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: "http",
+            scheme: "bearer",
+            bearerFormat: "JWT",
+          },
+        },
+      },
+      security: [{ bearerAuth: [] }],
+      tags: [
+        { name: "auth", description: "Authentication endpoints" },
+        { name: "users", description: "User and role management" },
+        { name: "records", description: "Financial record operations" },
+        { name: "dashboard", description: "Dashboard analytics" },
+      ],
+    },
+  });
+
+  await app.register(fastifySwaggerUi, {
+    routePrefix: "/docs/swagger",
+    uiConfig: {
+      docExpansion: "list",
+      deepLinking: false,
+    },
+  });
+
+  app.get("/openapi.json", async () => app.swagger());
+
+  const { default: apiReference } = await import("@scalar/fastify-api-reference");
+
+  await app.register(apiReference, {
+    routePrefix: "/docs",
+    configuration: {
+      url: "/openapi.json",
+    },
   });
 
   // Health check route (no auth required)

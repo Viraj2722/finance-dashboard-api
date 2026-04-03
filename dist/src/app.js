@@ -7,6 +7,8 @@ exports.createApp = createApp;
 const fastify_1 = __importDefault(require("fastify"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 const helmet_1 = __importDefault(require("@fastify/helmet"));
+const swagger_1 = __importDefault(require("@fastify/swagger"));
+const swagger_ui_1 = __importDefault(require("@fastify/swagger-ui"));
 const env_1 = __importDefault(require("./config/env"));
 const auth_routes_1 = require("./modules/auth/auth.routes");
 const users_routes_1 = require("./modules/users/users.routes");
@@ -16,6 +18,8 @@ const errors_1 = require("./utils/errors");
 const response_1 = require("./utils/response");
 const fastifyJwt = require("@fastify/jwt");
 async function createApp() {
+    const protocol = env_1.default.NODE_ENV === "production" ? "https" : "http";
+    const serverUrl = env_1.default.API_BASE_URL ?? `${protocol}://${env_1.default.HOST}:${env_1.default.PORT}`;
     const app = (0, fastify_1.default)({
         logger: {
             level: env_1.default.NODE_ENV === "production" ? "error" : "debug",
@@ -28,6 +32,47 @@ async function createApp() {
     });
     await app.register(fastifyJwt, {
         secret: env_1.default.JWT_SECRET,
+    });
+    await app.register(swagger_1.default, {
+        openapi: {
+            openapi: "3.0.3",
+            info: {
+                title: "Finance Dashboard API",
+                version: "1.0.0",
+            },
+            servers: [{ url: serverUrl }],
+            components: {
+                securitySchemes: {
+                    bearerAuth: {
+                        type: "http",
+                        scheme: "bearer",
+                        bearerFormat: "JWT",
+                    },
+                },
+            },
+            security: [{ bearerAuth: [] }],
+            tags: [
+                { name: "auth", description: "Authentication endpoints" },
+                { name: "users", description: "User and role management" },
+                { name: "records", description: "Financial record operations" },
+                { name: "dashboard", description: "Dashboard analytics" },
+            ],
+        },
+    });
+    await app.register(swagger_ui_1.default, {
+        routePrefix: "/docs/swagger",
+        uiConfig: {
+            docExpansion: "list",
+            deepLinking: false,
+        },
+    });
+    app.get("/openapi.json", async () => app.swagger());
+    const { default: apiReference } = await import("@scalar/fastify-api-reference");
+    await app.register(apiReference, {
+        routePrefix: "/docs",
+        configuration: {
+            url: "/openapi.json",
+        },
     });
     // Health check route (no auth required)
     app.get("/health", async (request, reply) => {
