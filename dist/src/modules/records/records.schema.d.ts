@@ -37,7 +37,7 @@ export declare const updateRecordSchema: z.ZodObject<{
     category?: "SALARY" | "FOOD" | "TRANSPORT" | "UTILITIES" | "ENTERTAINMENT" | "HEALTHCARE" | "OTHER" | undefined;
     notes?: string | undefined;
 }>;
-export declare const listRecordsQuerySchema: z.ZodObject<{
+export declare const listRecordsQuerySchema: z.ZodEffects<z.ZodObject<{
     type: z.ZodOptional<z.ZodEnum<["INCOME", "EXPENSE"]>>;
     category: z.ZodOptional<z.ZodEnum<["SALARY", "FOOD", "TRANSPORT", "UTILITIES", "ENTERTAINMENT", "HEALTHCARE", "OTHER"]>>;
     startDate: z.ZodOptional<z.ZodString>;
@@ -45,6 +45,20 @@ export declare const listRecordsQuerySchema: z.ZodObject<{
     page: z.ZodDefault<z.ZodNumber>;
     limit: z.ZodDefault<z.ZodNumber>;
 }, "strip", z.ZodTypeAny, {
+    page: number;
+    limit: number;
+    type?: "INCOME" | "EXPENSE" | undefined;
+    category?: "SALARY" | "FOOD" | "TRANSPORT" | "UTILITIES" | "ENTERTAINMENT" | "HEALTHCARE" | "OTHER" | undefined;
+    startDate?: string | undefined;
+    endDate?: string | undefined;
+}, {
+    type?: "INCOME" | "EXPENSE" | undefined;
+    page?: number | undefined;
+    limit?: number | undefined;
+    category?: "SALARY" | "FOOD" | "TRANSPORT" | "UTILITIES" | "ENTERTAINMENT" | "HEALTHCARE" | "OTHER" | undefined;
+    startDate?: string | undefined;
+    endDate?: string | undefined;
+}>, {
     page: number;
     limit: number;
     type?: "INCOME" | "EXPENSE" | undefined;

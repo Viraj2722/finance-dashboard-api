@@ -9,8 +9,8 @@ export const updateUserStatusSchema = z.object({
 });
 
 export const listUsersQuerySchema = z.object({
-  page: z.coerce.number().default(1),
-  limit: z.coerce.number().default(10),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 export type UpdateUserRolePayload = z.infer<typeof updateUserRoleSchema>;

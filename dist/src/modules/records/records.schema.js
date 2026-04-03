@@ -47,9 +47,17 @@ exports.listRecordsQuerySchema = zod_1.z.object({
         "OTHER",
     ])
         .optional(),
-    startDate: zod_1.z.string().optional(),
-    endDate: zod_1.z.string().optional(),
-    page: zod_1.z.coerce.number().default(1),
-    limit: zod_1.z.coerce.number().default(10),
+    startDate: zod_1.z.string().date().optional(),
+    endDate: zod_1.z.string().date().optional(),
+    page: zod_1.z.coerce.number().int().min(1).default(1),
+    limit: zod_1.z.coerce.number().int().min(1).max(100).default(10),
+}).refine((query) => {
+    if (!query.startDate || !query.endDate) {
+        return true;
+    }
+    return new Date(query.startDate) <= new Date(query.endDate);
+}, {
+    message: "startDate must be before or equal to endDate",
+    path: ["endDate"],
 });
 //# sourceMappingURL=records.schema.js.map

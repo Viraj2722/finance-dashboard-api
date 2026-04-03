@@ -9,7 +9,7 @@ exports.updateUserStatusSchema = zod_1.z.object({
     status: zod_1.z.enum(["ACTIVE", "INACTIVE"]),
 });
 exports.listUsersQuerySchema = zod_1.z.object({
-    page: zod_1.z.coerce.number().default(1),
-    limit: zod_1.z.coerce.number().default(10),
+    page: zod_1.z.coerce.number().int().min(1).default(1),
+    limit: zod_1.z.coerce.number().int().min(1).max(100).default(10),
 });
 //# sourceMappingURL=users.schema.js.map

@@ -47,11 +47,22 @@ export const listRecordsQuerySchema = z.object({
       "OTHER",
     ])
     .optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  page: z.coerce.number().default(1),
-  limit: z.coerce.number().default(10),
-});
+  startDate: z.string().date().optional(),
+  endDate: z.string().date().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+}).refine(
+  (query) => {
+    if (!query.startDate || !query.endDate) {
+      return true;
+    }
+    return new Date(query.startDate) <= new Date(query.endDate);
+  },
+  {
+    message: "startDate must be before or equal to endDate",
+    path: ["endDate"],
+  }
+);
 
 export type CreateRecordPayload = z.infer<typeof createRecordSchema>;
 export type UpdateRecordPayload = z.infer<typeof updateRecordSchema>;

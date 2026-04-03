@@ -1,5 +1,4 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { ForbiddenError } from "../utils/errors";
 
 export function authorize(allowedRoles: string[]) {
   return async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
