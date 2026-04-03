@@ -28,9 +28,7 @@ class RecordsController {
         try {
             const query = records_schema_1.listRecordsQuerySchema.parse(request.query);
             const result = await records_service_1.recordsService.listRecords(query);
-            reply.code(200).send((0, response_1.successResponse)("Records retrieved successfully", result.records, {
-                pagination: result.pagination,
-            }));
+            reply.code(200).send((0, response_1.successResponse)("Records retrieved successfully", result.records, result.pagination));
         }
         catch (error) {
             if (error instanceof errors_1.AppError) {

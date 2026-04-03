@@ -38,9 +38,7 @@ export class RecordsController {
       const result = await recordsService.listRecords(query);
 
       reply.code(200).send(
-        successResponse("Records retrieved successfully", result.records, {
-          pagination: result.pagination,
-        })
+        successResponse("Records retrieved successfully", result.records, result.pagination)
       );
     } catch (error) {
       if (error instanceof AppError) {

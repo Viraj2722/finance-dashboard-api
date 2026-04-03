@@ -10,9 +10,7 @@ class UsersController {
         try {
             const query = users_schema_1.listUsersQuerySchema.parse(request.query);
             const result = await users_service_1.usersService.listUsers(query.page, query.limit);
-            reply.code(200).send((0, response_1.successResponse)("Users retrieved successfully", result.users, {
-                pagination: result.pagination,
-            }));
+            reply.code(200).send((0, response_1.successResponse)("Users retrieved successfully", result.users, result.pagination));
         }
         catch (error) {
             if (error instanceof errors_1.AppError) {

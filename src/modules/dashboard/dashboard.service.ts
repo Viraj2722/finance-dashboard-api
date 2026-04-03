@@ -4,66 +4,61 @@ import type { DashboardTrendsQuery } from "./dashboard.schema";
 
 export class DashboardService {
   async getSummary() {
-    // Get all non-deleted records
-    const records = await prisma.financialRecord.findMany({
-      where: { isDeleted: false },
-      select: {
-        amount: true,
-        type: true,
-      },
-    });
+    const [incomeAgg, expenseAgg, totalRecords] = await Promise.all([
+      prisma.financialRecord.aggregate({
+        where: { isDeleted: false, type: "INCOME" },
+        _sum: { amount: true },
+      }),
+      prisma.financialRecord.aggregate({
+        where: { isDeleted: false, type: "EXPENSE" },
+        _sum: { amount: true },
+      }),
+      prisma.financialRecord.count({ where: { isDeleted: false } }),
+    ]);
 
-    let totalIncome = new Decimal(0);
-    let totalExpenses = new Decimal(0);
-
-    for (const record of records) {
-      if (record.type === "INCOME") {
-        totalIncome = totalIncome.plus(record.amount);
-      } else {
-        totalExpenses = totalExpenses.plus(record.amount);
-      }
-    }
-
+    const totalIncome = incomeAgg._sum.amount ?? new Decimal(0);
+    const totalExpenses = expenseAgg._sum.amount ?? new Decimal(0);
     const netBalance = totalIncome.minus(totalExpenses);
 
     return {
       totalIncome: totalIncome.toString(),
       totalExpenses: totalExpenses.toString(),
       netBalance: netBalance.toString(),
-      totalRecords: records.length,
+      totalRecords,
     };
   }
 
   async getByCategory() {
-    const records = await prisma.financialRecord.findMany({
+    const groupedRows = await prisma.financialRecord.groupBy({
+      by: ["category", "type"],
       where: { isDeleted: false },
-      select: {
+      _sum: {
         amount: true,
-        type: true,
-        category: true,
       },
     });
 
-    // Group by category and type
+    // Convert grouped rows into category totals split by type.
     const grouped: {
       [key: string]: { INCOME: Decimal; EXPENSE: Decimal };
     } = {};
 
-    for (const record of records) {
-      if (!grouped[record.category]) {
-        grouped[record.category] = {
+    for (const row of groupedRows) {
+      if (!grouped[row.category]) {
+        grouped[row.category] = {
           INCOME: new Decimal(0),
           EXPENSE: new Decimal(0),
         };
       }
 
-      if (record.type === "INCOME") {
-        grouped[record.category].INCOME = grouped[record.category].INCOME.plus(
-          record.amount
+      const amount = row._sum.amount ?? new Decimal(0);
+
+      if (row.type === "INCOME") {
+        grouped[row.category].INCOME = grouped[row.category].INCOME.plus(
+          amount
         );
       } else {
-        grouped[record.category].EXPENSE = grouped[record.category].EXPENSE.plus(
-          record.amount
+        grouped[row.category].EXPENSE = grouped[row.category].EXPENSE.plus(
+          amount
         );
       }
     }

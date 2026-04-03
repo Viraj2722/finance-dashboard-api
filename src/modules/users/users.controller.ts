@@ -15,9 +15,7 @@ export class UsersController {
       const result = await usersService.listUsers(query.page, query.limit);
 
       reply.code(200).send(
-        successResponse("Users retrieved successfully", result.users, {
-          pagination: result.pagination,
-        })
+        successResponse("Users retrieved successfully", result.users, result.pagination)
       );
     } catch (error) {
       if (error instanceof AppError) {

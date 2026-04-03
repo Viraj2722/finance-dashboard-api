@@ -5,55 +5,50 @@ const db_1 = require("../../config/db");
 const library_1 = require("@prisma/client/runtime/library");
 class DashboardService {
     async getSummary() {
-        // Get all non-deleted records
-        const records = await db_1.prisma.financialRecord.findMany({
-            where: { isDeleted: false },
-            select: {
-                amount: true,
-                type: true,
-            },
-        });
-        let totalIncome = new library_1.Decimal(0);
-        let totalExpenses = new library_1.Decimal(0);
-        for (const record of records) {
-            if (record.type === "INCOME") {
-                totalIncome = totalIncome.plus(record.amount);
-            }
-            else {
-                totalExpenses = totalExpenses.plus(record.amount);
-            }
-        }
+        const [incomeAgg, expenseAgg, totalRecords] = await Promise.all([
+            db_1.prisma.financialRecord.aggregate({
+                where: { isDeleted: false, type: "INCOME" },
+                _sum: { amount: true },
+            }),
+            db_1.prisma.financialRecord.aggregate({
+                where: { isDeleted: false, type: "EXPENSE" },
+                _sum: { amount: true },
+            }),
+            db_1.prisma.financialRecord.count({ where: { isDeleted: false } }),
+        ]);
+        const totalIncome = incomeAgg._sum.amount ?? new library_1.Decimal(0);
+        const totalExpenses = expenseAgg._sum.amount ?? new library_1.Decimal(0);
         const netBalance = totalIncome.minus(totalExpenses);
         return {
             totalIncome: totalIncome.toString(),
             totalExpenses: totalExpenses.toString(),
             netBalance: netBalance.toString(),
-            totalRecords: records.length,
+            totalRecords,
         };
     }
     async getByCategory() {
-        const records = await db_1.prisma.financialRecord.findMany({
+        const groupedRows = await db_1.prisma.financialRecord.groupBy({
+            by: ["category", "type"],
             where: { isDeleted: false },
-            select: {
+            _sum: {
                 amount: true,
-                type: true,
-                category: true,
             },
         });
-        // Group by category and type
+        // Convert grouped rows into category totals split by type.
         const grouped = {};
-        for (const record of records) {
-            if (!grouped[record.category]) {
-                grouped[record.category] = {
+        for (const row of groupedRows) {
+            if (!grouped[row.category]) {
+                grouped[row.category] = {
                     INCOME: new library_1.Decimal(0),
                     EXPENSE: new library_1.Decimal(0),
                 };
             }
-            if (record.type === "INCOME") {
-                grouped[record.category].INCOME = grouped[record.category].INCOME.plus(record.amount);
+            const amount = row._sum.amount ?? new library_1.Decimal(0);
+            if (row.type === "INCOME") {
+                grouped[row.category].INCOME = grouped[row.category].INCOME.plus(amount);
             }
             else {
-                grouped[record.category].EXPENSE = grouped[record.category].EXPENSE.plus(record.amount);
+                grouped[row.category].EXPENSE = grouped[row.category].EXPENSE.plus(amount);
             }
         }
         // Format the response

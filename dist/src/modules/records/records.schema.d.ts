@@ -1,6 +1,6 @@
 import { z } from "zod";
 export declare const createRecordSchema: z.ZodObject<{
-    amount: z.ZodEffects<z.ZodString, number, string>;
+    amount: z.ZodNumber;
     type: z.ZodEnum<["INCOME", "EXPENSE"]>;
     category: z.ZodEnum<["SALARY", "FOOD", "TRANSPORT", "UTILITIES", "ENTERTAINMENT", "HEALTHCARE", "OTHER"]>;
     date: z.ZodString;
@@ -14,12 +14,12 @@ export declare const createRecordSchema: z.ZodObject<{
 }, {
     type: "INCOME" | "EXPENSE";
     date: string;
-    amount: string;
+    amount: number;
     category: "SALARY" | "FOOD" | "TRANSPORT" | "UTILITIES" | "ENTERTAINMENT" | "HEALTHCARE" | "OTHER";
     notes?: string | undefined;
 }>;
 export declare const updateRecordSchema: z.ZodObject<{
-    amount: z.ZodOptional<z.ZodEffects<z.ZodString, number, string>>;
+    amount: z.ZodOptional<z.ZodNumber>;
     type: z.ZodOptional<z.ZodEnum<["INCOME", "EXPENSE"]>>;
     category: z.ZodOptional<z.ZodEnum<["SALARY", "FOOD", "TRANSPORT", "UTILITIES", "ENTERTAINMENT", "HEALTHCARE", "OTHER"]>>;
     date: z.ZodOptional<z.ZodString>;
@@ -33,7 +33,7 @@ export declare const updateRecordSchema: z.ZodObject<{
 }, {
     type?: "INCOME" | "EXPENSE" | undefined;
     date?: string | undefined;
-    amount?: string | undefined;
+    amount?: number | undefined;
     category?: "SALARY" | "FOOD" | "TRANSPORT" | "UTILITIES" | "ENTERTAINMENT" | "HEALTHCARE" | "OTHER" | undefined;
     notes?: string | undefined;
 }>;

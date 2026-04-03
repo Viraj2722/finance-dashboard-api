@@ -8,7 +8,7 @@ class RecordsService {
     async createRecord(payload, createdById) {
         const record = await db_1.prisma.financialRecord.create({
             data: {
-                amount: new library_1.Decimal(payload.amount),
+                amount: new library_1.Decimal(Math.abs(payload.amount)),
                 type: payload.type,
                 category: payload.category,
                 date: new Date(payload.date),
@@ -132,7 +132,7 @@ class RecordsService {
         }
         const updateData = {};
         if (payload.amount !== undefined) {
-            updateData.amount = new library_1.Decimal(payload.amount);
+            updateData.amount = new library_1.Decimal(Math.abs(payload.amount));
         }
         if (payload.type !== undefined) {
             updateData.type = payload.type;

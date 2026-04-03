@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createRecordSchema = z.object({
-  amount: z.string().transform((val) => parseFloat(val)),
+  amount: z.coerce.number().positive("Amount must be greater than 0"),
   type: z.enum(["INCOME", "EXPENSE"]),
   category: z.enum([
     "SALARY",
@@ -17,10 +17,7 @@ export const createRecordSchema = z.object({
 });
 
 export const updateRecordSchema = z.object({
-  amount: z
-    .string()
-    .transform((val) => parseFloat(val))
-    .optional(),
+  amount: z.coerce.number().positive("Amount must be greater than 0").optional(),
   type: z.enum(["INCOME", "EXPENSE"]).optional(),
   category: z
     .enum([

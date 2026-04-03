@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.listRecordsQuerySchema = exports.updateRecordSchema = exports.createRecordSchema = void 0;
 const zod_1 = require("zod");
 exports.createRecordSchema = zod_1.z.object({
-    amount: zod_1.z.string().transform((val) => parseFloat(val)),
+    amount: zod_1.z.coerce.number().positive("Amount must be greater than 0"),
     type: zod_1.z.enum(["INCOME", "EXPENSE"]),
     category: zod_1.z.enum([
         "SALARY",
@@ -18,10 +18,7 @@ exports.createRecordSchema = zod_1.z.object({
     notes: zod_1.z.string().optional(),
 });
 exports.updateRecordSchema = zod_1.z.object({
-    amount: zod_1.z
-        .string()
-        .transform((val) => parseFloat(val))
-        .optional(),
+    amount: zod_1.z.coerce.number().positive("Amount must be greater than 0").optional(),
     type: zod_1.z.enum(["INCOME", "EXPENSE"]).optional(),
     category: zod_1.z
         .enum([
