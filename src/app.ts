@@ -14,8 +14,7 @@ import { errorResponse } from "./utils/response";
 const fastifyJwt = require("@fastify/jwt");
 
 export async function createApp() {
-  const protocol = env.NODE_ENV === "production" ? "https" : "http";
-  const serverUrl = env.API_BASE_URL ?? `${protocol}://${env.HOST}:${env.PORT}`;
+  const serverUrl = process.env.API_URL || "http://localhost:3000";
 
   const app = Fastify({
     logger: {
